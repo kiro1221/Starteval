@@ -5,27 +5,54 @@
 ;; Core interpreter function
 (define (evaluate expr env)
   (cond
-    ;; Case: Constants (numbers, booleans)
+    ;; Constants (numbers, booleans)
     [(number? expr) expr]
     [(boolean? expr) expr]
 
-    ;; Case: Variables
+    ;; Variables
     [(symbol? expr) (lookup expr env)]
 
-    ;; Case: Arithmetic operators
+    ;; Quote
+    [(and (list? expr) (eq? 'quote (first expr)))
+     (second expr)]
+
+    ;; List operations
+    [(and (list? expr) (eq? (first expr) 'car))
+     (let ((list-val (evaluate (second expr) env)))
+       (if (pair? list-val)
+           (car list-val)
+           (error "car: not a pair" list-val)))]
+
+    [(and (list? expr) (eq? (first expr) 'cdr))
+     (let ((list-val (evaluate (second expr) env)))
+       (if (pair? list-val)
+           (cdr list-val)
+           (error "cdr: not a pair" list-val)))]
+
+    [(and (list? expr) (eq? (first expr) 'cons))
+     (let ((head (evaluate (second expr) env))
+           (tail (evaluate (third expr) env)))
+       (cons head tail))]
+
+    [(and (list? expr) (eq? (first expr) 'pair?))
+     (let ((list-val (evaluate (second expr) env)))
+       (pair? list-val))]
+
+    ;; Arithmetic operators
     [(and (list? expr) (member (first expr) '(+ - * /)))
      (evaluate-arithmetic (first expr) (second expr) (third expr) env)]
 
-    ;; Case: Relational operators
+    ;; Relational operators
     [(and (list? expr) (member (first expr) '(< <= = > >=)))
      (evaluate-relational (first expr) (second expr) (third expr) env)]
 
-    ;; Case: Conditional (if)
+    ;;if
     [(and (list? expr) (eq? 'if (first expr)))
      (evaluate-if (second expr) (third expr) (fourth expr) env)]
 
-    ;; Error]]unrecognized expressions
+    ;; Error: Unrecognized expression
     [else (error "Unrecognized expression: " expr)]))
+
 
 ;; Evaluate arithmetic expressions
 (define (evaluate-arithmetic op left right env)
