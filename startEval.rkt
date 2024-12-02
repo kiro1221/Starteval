@@ -185,6 +185,18 @@
 
   ;; Edge Cases for Environmental Lookups
   (check-exn exn:fail? (lambda () (startEval 'c test-env)) "Unbound variable c")
+  ;; Test car
+  (displayln (startEval '(car (quote (1 2 3))) empty-env)) ;;1
+  (displayln (startEval '(car (quote ((a b) c d))) empty-env)) ;; (a b)
+  ;; Test cdr
+  (displayln (startEval '(cdr (quote (1 2 3))) empty-env)) ;; (2 3)
+  (displayln (startEval '(cdr (quote ((a b) c d))) empty-env)) ;;  (c d)
+  ;; Test cons
+  (displayln (startEval '(cons 0 (quote (1 2 3))) empty-env)) ;;(0 1 2 3)
+  (displayln (startEval '(cons (quote a) (quote (b c))) empty-env)) ;; (a b c)
+  ;; Test pair?
+  (displayln (startEval '(pair? (quote (1 2 3))) empty-env)) ;; #t
+  (displayln (startEval '(pair? (quote ())) empty-env)) ;; #f
   ;; Display message if all tests pass
   (displayln "All Tests Passed!!!")
 )
